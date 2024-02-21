@@ -1,4 +1,4 @@
-# Nome do Projeto
+# Polls
 
 Este projeto é uma aplicação de enquetes, onde os usuários podem criar enquetes, votar em opções de enquetes e visualizar os resultados das enquetes.
 
