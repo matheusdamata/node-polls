@@ -1,9 +1,9 @@
-import z from "zod"
-import { randomUUID } from "node:crypto"
-import { FastifyInstance } from "fastify"
-import { prisma } from "../../lib/prisma"
-import { redis } from "../../lib/redis"
-import { voting } from "../../utils/voting-pub-sub"
+import z from 'zod'
+import { randomUUID } from 'node:crypto'
+import { FastifyInstance } from 'fastify'
+import { prisma } from '../../lib/prisma'
+import { redis } from '../../lib/redis'
+import { voting } from '../../utils/voting-pub-sub'
 
 export async function voteOnPoll(app: FastifyInstance) {
   app.post('/polls/:pollId/votes', async (req, reply) => {
@@ -14,7 +14,7 @@ export async function voteOnPoll(app: FastifyInstance) {
     const voteOnPollParamsSchema = z.object({
       pollId: z.string().uuid(),
     })
-  
+
     const { pollId } = voteOnPollParamsSchema.parse(req.params)
     const { pollOptionId } = voteOnPollBodySchema.parse(req.body)
 
@@ -25,19 +25,26 @@ export async function voteOnPoll(app: FastifyInstance) {
         where: {
           sessionId_pollId: {
             pollId,
-            sessionId
-          }
-        }
+            sessionId,
+          },
+        },
       })
 
-      if (userPreviousVoteOnPoll && userPreviousVoteOnPoll.pollOptionId !== pollOptionId) {
+      if (
+        userPreviousVoteOnPoll &&
+        userPreviousVoteOnPoll.pollOptionId !== pollOptionId
+      ) {
         await prisma.vote.delete({
           where: {
-            id: userPreviousVoteOnPoll.id
-          }
+            id: userPreviousVoteOnPoll.id,
+          },
         })
 
-        const votes = await redis.zincrby(pollId, -1, userPreviousVoteOnPoll.pollOptionId)
+        const votes = await redis.zincrby(
+          pollId,
+          -1,
+          userPreviousVoteOnPoll.pollOptionId,
+        )
 
         voting.publish(pollId, {
           pollOptionId: userPreviousVoteOnPoll.pollOptionId,
@@ -45,7 +52,7 @@ export async function voteOnPoll(app: FastifyInstance) {
         })
       } else if (userPreviousVoteOnPoll) {
         return reply.status(400).send({
-          message: 'You already voted on this poll.'
+          message: 'You already voted on this poll.',
         })
       }
     }
@@ -65,8 +72,8 @@ export async function voteOnPoll(app: FastifyInstance) {
       data: {
         sessionId,
         pollId,
-        pollOptionId
-      }
+        pollOptionId,
+      },
     })
 
     const votes = await redis.zincrby(pollId, 1, pollOptionId)

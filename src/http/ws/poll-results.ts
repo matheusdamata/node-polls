@@ -1,6 +1,6 @@
-import { FastifyInstance } from "fastify"
-import z from "zod"
-import { voting } from "../../utils/voting-pub-sub"
+import { FastifyInstance } from 'fastify'
+import z from 'zod'
+import { voting } from '../../utils/voting-pub-sub'
 
 export async function pollResults(app: FastifyInstance) {
   app.get('/polls/:pollId/results', { websocket: true }, (connection, req) => {
